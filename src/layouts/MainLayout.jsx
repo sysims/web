@@ -1,83 +1,137 @@
 import React from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 
-export default function MainLayout() {
+export default function MainLayout({ onLogout, user }) {
   const location = useLocation();
 
+  // Daftar menu yang disesuaikan dengan kebutuhan routing dan visual target
   const menuItems = [
-    { path: '/dashboard', name: 'Dashboard', icon: 'fa-solid fa-border-all' },
-    { path: '/absensi', name: 'Absensi', icon: 'fa-regular fa-clock' },
-    { path: '/cuti', name: 'Cuti', icon: 'fa-regular fa-calendar' },
-    { path: '/karyawan', name: 'Karyawan', icon: 'fa-solid fa-user-group' },
+    { path: '/dashboard', name: 'Dashboard Utama', icon: 'fa-solid fa-border-all' },
+    { path: '/apply-cuti', name: 'Apply Cuti', icon: 'fa-regular fa-file-lines' },
+    { path: '/history-cuti', name: 'History Cuti', icon: 'fa-regular fa-clock' },
   ];
 
+  // Mengambil 2 huruf pertama dari nama user untuk inisial Avatar bulat
+  const getInitials = (name) => {
+    if (!name) return 'AS';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  // Mengubah teks sub-header di bawah judul utama secara dinamis sesuai gambar 3, 4, dan 5
+  const getSubHeaderTitle = () => {
+    switch (location.pathname) {
+      case '/':
+      case '/dashboard':
+        return 'Dashboard Utama';
+      case '/apply-cuti':
+        return 'Formulir Pengajuan Cuti Baru';
+      case '/history-cuti':
+        return 'Riwayat & Pelacakan Alur Cuti';
+      case '/absensi':
+        return 'Pencatatan Absensi Karyawan';
+      case '/karyawan':
+        return 'Manajemen Data Karyawan';
+      default:
+        return 'Management System';
+    }
+  };
+
   return (
-    <div className="bg-gray-50 h-screen flex overflow-hidden font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#1e345e] text-white flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-white/10">
-          <div className="bg-blue-500 p-1.5 rounded mr-3">
-            <i className="fa-solid fa-chart-line text-sm"></i>
+    <div className="bg-[#F4F7F6] h-screen flex overflow-hidden font-sans">
+      
+      {/* ========================================================================= */}
+      {/* 1. SIDEBAR PANEL (Kiri)                                                   */}
+      {/* ========================================================================= */}
+      {/* hidden md:flex membuat sidebar responsif (sembunyi di mobile, muncul di desktop) */}
+      <aside className="w-64 bg-[#2A6B4F] text-white flex flex-col hidden md:flex transition-all duration-300 shrink-0">
+        
+        {/* Area Informasi Profil */}
+        <div className="flex flex-col items-center py-8 border-b border-white/10">
+          {/* Avatar Lingkaran Putih */}
+          <div className="w-20 h-20 bg-white text-[#2A6B4F] rounded-full flex items-center justify-center text-2xl font-bold mb-3 shadow-md">
+            {getInitials(user?.name)}
           </div>
-          <div>
-            <h1 className="font-bold text-sm tracking-wide">HRisma</h1>
-            <p className="text-[10px] text-blue-200 uppercase tracking-wider">HRMS</p>
-          </div>
+          {/* Nama User */}
+          <h2 className="font-semibold tracking-wide px-4 text-center truncate w-full">
+            {user?.name || 'Andi Santoso'}
+          </h2>
+          {/* Role Badge */}
+          <span className="text-[11px] bg-white/20 px-4 py-0.5 rounded-full mt-1.5 capitalize tracking-wider font-medium opacity-90">
+            {user?.role || 'Member'}
+          </span>
         </div>
 
-        <nav className="flex-1 py-4 px-3 space-y-1">
+        {/* Menu Navigasi */}
+        <nav className="flex-1 py-6 px-3 space-y-1">
           {menuItems.map((item) => {
-            // Mengecek apakah URL saat ini mengandung path menu (agar sub-menu cuti tetap membuat menu Cuti aktif)
             const isActive = location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-all ${
-                  isActive ? 'bg-white/10 text-white font-medium' : 'text-gray-300 hover:bg-white/5'
+                className={`flex items-center px-4 py-3 rounded-xl text-sm transition-all group ${
+                  isActive 
+                    ? 'bg-white/10 text-white font-semibold' 
+                    : 'text-gray-200/80 hover:bg-white/5 hover:text-white'
                 }`}
               >
-                <i className={`${item.icon} w-6 text-center`}></i>
+                {/* Ikon Menu */}
+                <i className={`${item.icon} w-6 text-center mr-3 text-base opacity-90 group-hover:scale-105 transition-transform`}></i>
+                {/* Nama Menu */}
                 <span className="flex-1">{item.name}</span>
-                {isActive && <i className="fa-solid fa-chevron-right text-[10px]"></i>}
               </Link>
             );
           })}
         </nav>
         
+        {/* Tombol Logout Bagian Bawah Sidebar */}
         <div className="p-4 border-t border-white/10">
-          <i className="fa-solid fa-chevron-left text-gray-400 text-xs pl-2 cursor-pointer"></i>
+          <button 
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-red-800/30 hover:text-red-200 py-3 rounded-xl text-sm font-medium transition-colors text-white/90 border border-white/10"
+          >
+            <i className="fa-solid fa-arrow-right-from-bracket rotate-180"></i>
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
-          <div className="text-sm font-medium text-gray-800 capitalize">
-            {location.pathname.split('/')[1] || 'Dashboard'}
+      {/* ========================================================================= */}
+      {/* 2. AREA KONTEN UTAMA & HEADER (Kanan)                                     */}
+      {/* ========================================================================= */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        {/* Navbar Atas / Header */}
+        <header className="h-20 bg-white flex items-center justify-between px-8 shrink-0 z-10 border-b border-gray-100">
+          <div>
+            {/* Judul Aplikasi Sistem */}
+            <h1 className="text-lg md:text-xl font-bold text-[#2A6B4F] tracking-wide">
+              SYS Indonesia Management System
+            </h1>
+            {/* Sub-judul Dinamis (Berubah Sesuai Halaman) */}
+            <p className="text-xs md:text-sm text-gray-400 mt-0.5 font-medium">
+              {getSubHeaderTitle()}
+            </p>
           </div>
-          <div className="flex items-center gap-6">
-            <button className="text-gray-400 hover:text-gray-600 relative">
-              <i className="fa-regular fa-bell text-lg"></i>
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+          
+          {/* Tombol Logout Kanan Atas */}
+          <div className="hidden md:flex items-center">
+            <button 
+              onClick={onLogout}
+              className="text-sm font-bold text-gray-600 hover:text-red-600 transition-colors flex items-center gap-1.5"
+            >
+              <span>Logout</span>
+              <i className="fa-solid fa-power-off text-xs"></i>
             </button>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">
-                SI
-              </div>
-              <div className="text-sm">
-                <div className="font-medium text-gray-800">Sari Indah</div>
-                <div className="text-[11px] text-gray-500">HR Admin</div>
-              </div>
-            </div>
           </div>
         </header>
 
-        {/* Content Dinamis (Akan diisi oleh Page) */}
-        <div className="flex-1 overflow-auto">
+        {/* Wadah Konten Halaman (Scrollable Area) */}
+        {/* overflow-y-auto memastikan konten di dalam `Outlet` bisa di-scroll secara independen */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-[#F4F7F6]">
           <Outlet />
         </div>
+        
       </main>
     </div>
   );
